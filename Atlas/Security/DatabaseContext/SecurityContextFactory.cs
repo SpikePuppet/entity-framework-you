@@ -8,6 +8,7 @@
 
 using Atlas.DatabaseContext;
 using Atlas.Security.User;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -16,19 +17,19 @@ namespace Atlas.Security.DatabaseContext
     public class SecurityContextFactory : ISecurityContextFactory
     {
         private readonly IIdentityService _identityService;
-        private readonly IConfiguration _configuration;
+        private readonly IDbContextOptions _contextOptions;
         private readonly ILogger _log;
 
-        public SecurityContextFactory(IIdentityService identityService, IConfiguration configuration, ILogger log)
+        public SecurityContextFactory(IIdentityService identityService, IDbContextOptions contextOptions, ILogger log)
         {
             _identityService = identityService;
-            _configuration = configuration;
+            _contextOptions = contextOptions;
             _log = log;
         }
 
         public virtual IContext Create()
         {
-            return new SecurityDbContext(_identityService, _configuration, _log);
+            return new SecurityDbContext(_identityService, _contextOptions, _log);
         }
     }
 }
