@@ -9,6 +9,7 @@
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Text.Json;
 
 namespace Atlas.Utilities
 {
@@ -23,6 +24,11 @@ namespace Atlas.Utilities
                 xmlSerializer.Serialize(xmlWriter, toSerialize);
                 return stringWriter.ToString();
             }
+        }
+        
+        public static string SerializeToJson(this object toSerialize)
+        {
+            return JsonSerializer.Serialize(toSerialize);
         }
     }
 }
