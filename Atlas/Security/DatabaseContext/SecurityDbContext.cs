@@ -6,11 +6,11 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
-using System.Data.Entity;
 using Atlas.DatabaseContext;
-using Atlas.Security.DatabaseContext.Migrations;
 using Atlas.Security.Models;
 using Atlas.Security.User;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -21,17 +21,14 @@ namespace Atlas.Security.DatabaseContext
         private static IConfiguration _configuration;
 
         // Required for entity framework migrations.
-        public SecurityDbContext()
-            : base(_configuration.GetConnectionString("SecurityDb"))
+        public SecurityDbContext(IDbContextOptions dbContextOptions)
+            : base(dbContextOptions)
         {
         }
 
-        public SecurityDbContext(IIdentityService identityService, IConfiguration configuration, ILogger log)
-            : base(_configuration.GetConnectionString("SecurityDb"), identityService, log)
+        public SecurityDbContext(IIdentityService identityService, IDbContextOptions dbContextOptions, ILogger log)
+            : base(dbContextOptions, identityService, log)
         {
-            Database.SetInitializer(new MigrateDatabaseToLatestVersion<SecurityDbContext, Configuration>());
-            Configuration.ProxyCreationEnabled = false;
-            _configuration = configuration;
         }
 
         public virtual DbSet<Login> Logins { get; set; }

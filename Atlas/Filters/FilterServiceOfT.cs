@@ -9,7 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Data.Entity;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
@@ -18,6 +17,7 @@ using Atlas.Extensions;
 using Atlas.Model.Attributes;
 using Atlas.Model.FilterExtensions;
 using Atlas.Utilities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.Filters
 {
@@ -51,7 +51,7 @@ namespace Atlas.Filters
 
             return query;
         }
-
+        
         public virtual IQueryable<T> AddOrderBys(IQueryable<T> query, List<OrderBy> orderBys)
         {
             if (orderBys != null && orderBys.Count != 0)
@@ -442,7 +442,7 @@ namespace Atlas.Filters
             var b = filterProperty.PropertyType.IsEnum || filterProperty.PropertyType.IsNullableType() && Nullable.GetUnderlyingType(filterProperty.PropertyType).IsEnum
                 ? Expression.GreaterThanOrEqual(Expression.Convert(m, typeof(int)), c)
                 : Expression.GreaterThanOrEqual(m, c);
-
+            
             var lambda = Expression.Lambda<Func<T, bool>>(b, e);
             query = query.Where(lambda);
             return query;

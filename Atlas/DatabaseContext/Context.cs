@@ -8,16 +8,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
+using System.Threading.Tasks;
 using Atlas.Extensions;
 using Atlas.Model.Attributes;
 using Atlas.Model.Enumerations;
 using Atlas.Model.Models;
 using Atlas.Security.User;
 using Atlas.Utilities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Atlas.DatabaseContext
@@ -27,23 +28,29 @@ namespace Atlas.DatabaseContext
         private readonly IIdentityService _identityService;
         private readonly ILogger _log;
 
-        public Context(string databaseName, IIdentityService identityService, ILogger log)
-            : this(databaseName)
+        public Context(IDbContextOptions databaseOptions, IIdentityService identityService, ILogger log)
+            : this(databaseOptions)
         {
             _identityService = identityService;
             _log = log;
             DatabaseAccessor = new DatabaseAccessor(Database);
         }
 
-        public Context(string databaseName)
-            : base(databaseName)
+        public Context(IDbContextOptions databaseName)
+            : base((DbContextOptions)databaseName)
         {
-            Configuration.ProxyCreationEnabled = false;
         }
 
         public virtual DbSet<Audit> Audits { get; set; }
 
         public IDatabaseAccessor DatabaseAccessor { get; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseLazyLoadingProxies();
+
+            base.OnConfiguring(optionsBuilder);
+        }
 
         public override int SaveChanges()
         {
@@ -59,20 +66,40 @@ namespace Atlas.DatabaseContext
             return result;
         }
 
+        public Task<int> SaveChangesAsync()
+        {
+            ChangeTracker.DetectChanges();
+
+            var changedEntities = ChangeTracker.Entries().ToList();
+            var originalStates = changedEntities.Select(x => x.State).ToList();
+
+            var result = base.SaveChangesAsync();
+
+            SaveAudit(changedEntities, originalStates);
+
+            return result;
+        }
+
         public void SetState(object entity, EntityState state)
         {
             Entry(entity).State = state;
         }
 
-        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Conventions.Add<ForeignKeyNamingConvention>();
-            modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>();
-            modelBuilder.Conventions.Remove<ManyToManyCascadeDeleteConvention>();
+            var foreignKeysToRemoveCascadeDeleteFrom
+                = modelBuilder.Model.GetEntityTypes().SelectMany(x => x.GetForeignKeys())
+                .Where(x => !x.IsOwnership && x.DeleteBehavior == DeleteBehavior.Cascade);
+
+            foreach (var foreignKey in foreignKeysToRemoveCascadeDeleteFrom)
+            {
+                foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
+            }
+            
             base.OnModelCreating(modelBuilder);
         }
 
-        protected virtual void SaveAudit(IEnumerable<DbEntityEntry> dbEntityEntries, IEnumerable<EntityState> originalEntityStates)
+        protected virtual void SaveAudit(IEnumerable<EntityEntry> dbEntityEntries, IEnumerable<EntityState> originalEntityStates)
         {
             var entitiesWithOriginalStates = dbEntityEntries.Zip(originalEntityStates, (x, y) => new {x.Entity, State = y});
 
@@ -91,30 +118,23 @@ namespace Atlas.DatabaseContext
                 throw new ApplicationException("Cannot Audit a class with a primary key of type long");
             }
 
+            var auditAction = entityState switch
+            {
+                EntityState.Added => AuditAction.Add,
+                EntityState.Deleted => AuditAction.Delete,
+                EntityState.Modified => AuditAction.Update,
+                _ => AuditAction.Fetch
+            };
+
             return new Audit
             {
-                AuditAction = EntityStateToAuditAction(entityState),
+                AuditAction = auditAction,
                 DateTime = DateTime.UtcNow,
                 Email = _identityService.GetEmail(),
                 Type = entity.GetType().FullName,
                 TypeId = (int) entity.GetIdFromEntity(),
-                SerializedEntity = entity.SerializeToXml()
+                SerializedEntity = entity.SerializeToJson()
             };
-        }
-
-        protected AuditAction EntityStateToAuditAction(EntityState entityState)
-        {
-            switch (entityState)
-            {
-                case EntityState.Added:
-                    return AuditAction.Add;
-                case EntityState.Deleted:
-                    return AuditAction.Delete;
-                case EntityState.Modified:
-                    return AuditAction.Update;
-                default:
-                    return AuditAction.Fetch;
-            }
         }
     }
 }

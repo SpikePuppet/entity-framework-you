@@ -8,8 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Validation;
 using System.Linq;
 using Atlas.CascadeDelete;
 using Atlas.DatabaseContext;
@@ -18,6 +16,7 @@ using Atlas.Filters;
 using Atlas.Permissions;
 using Atlas.ScopeOfResponsibility;
 using Atlas.Utilities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.EntityServices
 {
@@ -208,7 +207,7 @@ namespace Atlas.EntityServices
                 {
                     context.SaveChanges();
                 }
-                catch (DbEntityValidationException exception)
+                catch (DbUpdateException exception)
                 {
                     WrapValidationException(exception);
                 }
@@ -242,7 +241,7 @@ namespace Atlas.EntityServices
                     {
                         context.SaveChanges();
                     }
-                    catch (DbEntityValidationException exception)
+                    catch (DbUpdateException exception)
                     {
                         WrapValidationException(exception);
                     }
@@ -276,7 +275,7 @@ namespace Atlas.EntityServices
                 {
                     context.SaveChanges();
                 }
-                catch (DbEntityValidationException exception)
+                catch (DbUpdateException exception)
                 {
                     WrapValidationException(exception);
                 }
@@ -353,15 +352,12 @@ namespace Atlas.EntityServices
             return completeQuery;
         }
 
-        protected virtual void WrapValidationException(DbEntityValidationException exception)
+        protected virtual void WrapValidationException(DbUpdateException exception)
         {
-            throw new ApplicationException("Validation errors have occurred. " +
-                                           string.Join("; ",
-                                               exception.EntityValidationErrors.SelectMany(x => x.ValidationErrors)
-                                                   .Select(
-                                                       x =>
-                                                           string.Format("Property: {0}, Error: {1}", x.PropertyName,
-                                                               x.ErrorMessage))));
+            // TODO: This is a curious case where we don't know enough about the error structure to 
+            // actually output it properly. So let's just see what happens and implement as it comes
+            throw new ApplicationException("There was an issue persisting data, Exception: " + exception);
+
         }
     }
 }

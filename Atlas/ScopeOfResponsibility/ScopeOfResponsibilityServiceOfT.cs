@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Security;
@@ -16,6 +15,7 @@ using Atlas.Extensions;
 using Atlas.Security.DatabaseContext;
 using Atlas.Security.Models;
 using Atlas.Security.User;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Atlas.ScopeOfResponsibility

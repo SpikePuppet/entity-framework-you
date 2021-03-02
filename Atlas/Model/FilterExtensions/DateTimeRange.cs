@@ -7,6 +7,7 @@
 // // -----------------------------------------------------------------------
 
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Atlas.Model.FilterExtensions
 {
@@ -15,7 +16,7 @@ namespace Atlas.Model.FilterExtensions
         public DateTimeRange()
         {
             After = DateTime.MinValue;
-            Before = DateTime.MaxValue;
+            Before = new DateTime(9999, 12, 31, 23, 59, 59);
         }
 
         public DateTime After { get; set; }
