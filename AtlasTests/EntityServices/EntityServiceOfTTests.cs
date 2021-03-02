@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using Atlas.CascadeDelete;
 using Atlas.DatabaseContext;
@@ -16,6 +15,7 @@ using Atlas.EntityServices;
 using Atlas.Filters;
 using Atlas.Permissions;
 using Atlas.ScopeOfResponsibility;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 

@@ -8,10 +8,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using Atlas.Filters;
 using Atlas.Model.FilterExtensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -105,61 +105,6 @@ namespace AtlasTests.Filters
 
             // Assert
             filterService.Verify(x => x.AutoFilter(queryable, filter), Times.Once);
-        }
-
-        [TestMethod]
-        public void AddIncludes_SingleInclude_CallsIncludeOnTheQueryableWithTheSingleInclude()
-        {
-            // Arrange
-            var filterService = new Mock<FilterService<DummyParent>> { CallBase = true };
-
-            var mockDbSet = new Mock<DbSet<DummyParent>>();
-
-            mockDbSet.Setup(x => x.Include(It.IsAny<string>()))
-                .Returns<string>(x => mockDbSet.Object);
-
-            // Act
-            filterService.Object.AddIncludes(mockDbSet.Object, new List<string> { "DummyEntity" });
-
-            // Assert
-            mockDbSet.Verify(mock => mock.Include("DummyEntity"), Times.Once);
-        }
-
-        [TestMethod]
-        public void AddIncludes_TwoIncludes_CallsIncludeOnTheQueryableWithBothIncludes()
-        {
-            // Arrange
-            var filterService = new Mock<FilterService<DummyParent>> { CallBase = true };
-
-            var mockDbSet = new Mock<DbSet<DummyParent>>();
-
-            mockDbSet.Setup(x => x.Include(It.IsAny<string>()))
-                .Returns<string>(x => mockDbSet.Object);
-
-            // Act
-            filterService.Object.AddIncludes(mockDbSet.Object, new List<string> { "DummyEntity", "DummyEntity.DummyChild" });
-
-            // Assert
-            mockDbSet.Verify(mock => mock.Include("DummyEntity"), Times.Once);
-            mockDbSet.Verify(mock => mock.Include("DummyEntity.DummyChild"), Times.Once);
-        }
-
-        [TestMethod]
-        public void AddIncludes_IncludesIsNull_DoesNotCallIncludeOnTheQueryable()
-        {
-            // Arrange
-            var filterService = new Mock<FilterService<DummyParent>> { CallBase = true };
-
-            var mockDbSet = new Mock<DbSet<DummyParent>>();
-
-            mockDbSet.Setup(x => x.Include(It.IsAny<string>()))
-                .Returns<string>(x => mockDbSet.Object);
-
-            // Act
-            filterService.Object.AddIncludes(mockDbSet.Object, null);
-
-            // Assert
-            mockDbSet.Verify(mock => mock.Include(It.IsAny<string>()), Times.Never);
         }
 
         [TestMethod]

@@ -7,8 +7,6 @@
 // // -----------------------------------------------------------------------
 
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Security;
 using Atlas.DatabaseContext;
@@ -16,6 +14,7 @@ using Atlas.ScopeOfResponsibility;
 using Atlas.Security.DatabaseContext;
 using Atlas.Security.Models;
 using Atlas.Security.User;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -45,7 +44,6 @@ namespace AtlasTests.ScopeOfResponsibility
             _context = new Mock<IContext>();
             _context.Setup(x => x.Set<DummyEntity>()).Returns(_mockDbSet.Object);
             _context.Setup(x => x.Set<Login>()).Returns(_mockDbSetLogins.Object);
-            _context.As<IObjectContextAdapter>();
 
             _contextFactory = new Mock<ISecurityContextFactory>();
             _contextFactory.Setup(x => x.Create()).Returns(_context.Object);
