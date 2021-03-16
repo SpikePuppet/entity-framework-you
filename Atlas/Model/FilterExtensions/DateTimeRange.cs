@@ -16,10 +16,12 @@ namespace Atlas.Model.FilterExtensions
         public DateTimeRange()
         {
             After = DateTime.MinValue;
-            Before = new DateTime(9999, 12, 31, 23, 59, 59);
+            Before = new DateTime(9999, 12, 31, 0, 0, 0);
         }
 
+        [Column(TypeName = "datetime")]
         public DateTime After { get; set; }
+        [Column(TypeName = "datetime")]
         public DateTime Before { get; set; }
     }
 }

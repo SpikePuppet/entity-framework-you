@@ -10,25 +10,38 @@ using Atlas.DatabaseContext;
 using Atlas.Security.Models;
 using Atlas.Security.User;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Atlas.Security.DatabaseContext
 {
     public class SecurityDbContext : Context
     {
-        private static IConfiguration _configuration;
+        public SecurityDbContext(IIdentityService identityService, DbContextOptions<SecurityDbContext> dbContextOptions, ILogger<SecurityDbContext> log)
+            : base(dbContextOptions, identityService, log)
+        {
+        }
 
-        // Required for entity framework migrations.
-        public SecurityDbContext(IDbContextOptions dbContextOptions)
+        public SecurityDbContext(DbContextOptions<SecurityDbContext> dbContextOptions)
             : base(dbContextOptions)
         {
         }
 
-        public SecurityDbContext(IIdentityService identityService, IDbContextOptions dbContextOptions, ILogger log)
-            : base(dbContextOptions, identityService, log)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Login>(x =>
+            {
+                x.Property(p => p.Username).IsRequired();
+                x.Property(p => p.Email).IsRequired();
+                x.Property(p => p.MobileNumber).IsRequired();
+            });
+
+            modelBuilder.Entity<LoginPermission>(x =>
+            {
+                x.Property(p => p.FullAccess).IsRequired();
+                x.Property(p => p.Type).IsRequired();
+            });
+
+            base.OnModelCreating(modelBuilder);
         }
 
         public virtual DbSet<Login> Logins { get; set; }
