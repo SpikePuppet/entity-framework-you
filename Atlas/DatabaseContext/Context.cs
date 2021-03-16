@@ -45,13 +45,6 @@ namespace Atlas.DatabaseContext
 
         public IDatabaseAccessor DatabaseAccessor { get; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseLazyLoadingProxies();
-
-            base.OnConfiguring(optionsBuilder);
-        }
-
         public override int SaveChanges()
         {
             ChangeTracker.DetectChanges();
