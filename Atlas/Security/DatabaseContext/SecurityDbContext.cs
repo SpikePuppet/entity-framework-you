@@ -34,6 +34,13 @@ namespace Atlas.Security.DatabaseContext
                 x.Property(p => p.Email).IsRequired();
                 x.Property(p => p.MobileNumber).IsRequired();
             });
+
+            modelBuilder.Entity<LoginPermission>(x =>
+            {
+                x.Property(p => p.FullAccess).IsRequired();
+                x.Property(p => p.Type).IsRequired();
+            });
+
             base.OnModelCreating(modelBuilder);
         }
 

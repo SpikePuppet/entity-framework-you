@@ -14,11 +14,11 @@ namespace Atlas.Security.Models
 {
     public class LoginPermission
     {
-        [Required(AllowEmptyStrings = false)] public bool? FullAccess { get; set; }
+        public bool? FullAccess { get; set; }
 
         [XmlIgnore] public virtual List<LoginPermissionItem> LoginPermissionItems { get; set; }
-
-        [Required(AllowEmptyStrings = false)] public string Type { get; set; }
+        
+        public string Type { get; set; }
 
         [XmlIgnore] public virtual Login Login { get; set; }
 
