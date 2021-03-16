@@ -26,6 +26,16 @@ namespace Atlas.Security.DatabaseContext
         {
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Login>(x =>
+            {
+                x.Property(p => p.Username).IsRequired();
+                x.Property(p => p.Email).IsRequired();
+                x.Property(p => p.MobileNumber).IsRequired();
+            });
+            base.OnModelCreating(modelBuilder);
+        }
 
         public virtual DbSet<Login> Logins { get; set; }
     }
